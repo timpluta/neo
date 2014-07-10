@@ -1,4 +1,4 @@
-function [L,S,T,maxes] = find_landmarks2(D,freq,ID)
+function [L,S,T,maxes] = find_landmarks2(D,freq,ID,clipNum)
     % Includes:
     %   - weightedCentroid based landmarking
     %   - peakfinding based on fastPeakFinder
@@ -26,8 +26,15 @@ function [L,S,T,maxes] = find_landmarks2(D,freq,ID)
     % SETTINGS 
     if nargin < 3
         ID=0;
+        clipNum=1;
+    end
+    
+    if nargin < 4
+        error('this version of find_landmarks requires clip number')
     end
 
+    persistent intMatrix
+    
     % global totalFFTtime
 
     % %tim commented out info
@@ -209,8 +216,73 @@ function [L,S,T,maxes] = find_landmarks2(D,freq,ID)
         % make multiples of 100
         % for changing resolution 
 
-        newmatrix=neointerp(S,1,rezBoxes); %to 1 b/c always set to 1 sec clips
+        
+        
+        
+        
+lengthSig=1;
+len=size(S,2);
+if len~=size(intMatrix,1)
+    newlen = lengthSig*rezBoxes; 
+
+    xx=1:(len-1)/(newlen-1):len;
+    rr=zeros(1,ceil(len^2/newlen));
+    cc=zeros(1,ceil(len^2/newlen));
+    proportions=zeros(1,ceil(len^2/newlen));
+    entryCount=1;
+
+    for nn=1:newlen
+        try 
+            lbound = 3*xx(nn-1)/4 + xx(nn+1)/4;
+        catch me
+            switch nn
+                case 1
+                    lbound = xx(1);
+                    ubound = (xx(1)+xx(2))/2;
+                case newlen
+                    lbound = (xx(end-1)+xx(end))/2;
+                    ubound = xx(end);
+            end
+        end
+        leftXold=round(lbound);
+        try
+            ubound = xx(nn-1)/4 + 3*xx(nn+1)/4;
+        catch me
+        end
+        rightXold=round(ubound);
+        lfraction = .5 + (leftXold - lbound);
+        ufraction = .5 - (rightXold - ubound);
+        baseContribution=1/(rightXold-leftXold+lfraction+ufraction-1);
+
+        for nnn=leftXold:rightXold
+            rr(entryCount)=nnn;
+            cc(entryCount)=nn;
+            if nnn==leftXold
+                proportions(entryCount)=lfraction*baseContribution;
+            elseif nnn==rightXold
+                proportions(entryCount)=ufraction*baseContribution;
+            else
+                proportions(entryCount)=baseContribution;
+            end
+            entryCount=entryCount+1;
+        end
+    end
+    rr=rr(rr~=0);
+    cc=cc(cc~=0);
+    proportions=proportions(1:length(rr));
+    intMatrix=sparse(rr,cc,proportions);
+end
+
+newmatrix=double(S)*intMatrix;
+%         
+%         newmatrix=neointerp(S,1,rezBoxes); %to 1 b/c always set to 1 sec clips
         S=round(newmatrix);
+        
+        
+        
+        
+        
+        
 
         % 2d FFT Filter
         % For improved temporal localization
@@ -286,7 +358,7 @@ function [L,S,T,maxes] = find_landmarks2(D,freq,ID)
 % maxpairsperpeak=3;   % moved to front by DAn
 
 % Landmark is <starttime F1 endtime F2>
-L = zeros(nmaxes3*maxpairsperpeak,6);
+L = zeros(nmaxes3*maxpairsperpeak,7);
 
 % Store maxes3 into maxes2;
 maxes2 = maxes3;
@@ -330,7 +402,8 @@ for i =1:nmaxes3
         L(nlmarks,3) = maxes2(2,match);  % frequency row
         L(nlmarks,4) = maxes2(1,match)-startt;  % time column difference 
         L(nlmarks,5) = maxes2(3,i);  % originating Channel number
-        L(nlmarks,6) = maxes2(3,match);  % ending Channel number  
+        L(nlmarks,6) = maxes2(3,match);  % ending Channel number
+        L(nlmarks,7) = clipNum; %added 2014-07-10 clip number for eliminating self matches
     
 
       %end

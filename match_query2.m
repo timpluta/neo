@@ -41,7 +41,7 @@ rperChan=100;
 meldWindow=1;
 
 %allow all landmarks in 2*lmBox+1 side length box
-lmBox=1;
+lmBox=0;
 
 %input hash constraints (only used for landmark box, not needed otherwise)
 ldT=0;
@@ -59,9 +59,22 @@ uF=62;
 % in future automate this off of autorandom sampling of # of high freq...
 % landmarks found
 if length(fieldnames(channels)) == 30
-    Lq= findLandmarks3(data,freq,channels);
+%     %non clip, segment search    
+%     Lq= findLandmarks3(data,freq,channels);
+    %clip search
+    a=strfind(clipName,'_');
+    b=strfind(clipName,'.');
+    clipNum=clipName(a(4)+1:b(1)-1);
+    Lq= findLandmarks3(data,freq,channels,str2double(clipNum));
+
 else
-    Lq= find_landmarks2(data,freq,channels);
+%     %non clip, segment search
+%     Lq= find_landmarks2(data,freq,channels);
+    %clip search
+    a=strfind(clipName,'_');
+    b=strfind(clipName,'.');
+    clipNum=clipName(a(4)+1:b(1)-1);
+    Lq= find_landmarks2(data,freq,channels,str2double(clipNum));
 end
 
 if lmBox>0

@@ -15,6 +15,10 @@ persistent z
 
 %load first found hashtable in clipLoc
 a=dir(strcat(clipLoc,filesep,'*Hush*.mat'));
+
+% %load first clip table
+% a=dir(strcat(clipLoc,filesep,'*By*.mat'));
+
 if size(a,1)==0
     error(strcat('no hash table in ',clipLoc))
 end
@@ -26,6 +30,7 @@ end
 
 
 if size(H,2) == 3
+    clips=H(:,1);
   H = H(:,[2 3]);
 end
 
@@ -35,38 +40,53 @@ end
 
 
 Rsize = 100;
-R = zeros(Rsize,3);
+% R = zeros(Rsize,3);
+R=zeros(1,3);
 Rmax = 0;
 
-for i = 1:length(H)
+for i = 1:size(H,1)
   hash = H(i,2);
-  htime = double(H(i,1));
-  
-  try
-%       htcol = nonzeros(z(:,hash));
-      htcol = z(z(:,hash)~=0,hash);
-  catch me
-      htcol=[];
-  end
-  nentries = length(htcol);
-  
-  for j = 1:nentries
-    time = htcol(j);
-      %if time... line tim added to not count t=0 hashes
-%     if time==htime
-%     else
-        Rmax = Rmax + 1;
-        if Rmax > Rsize
-          R = [R;zeros(Rsize,3)];
-          Rsize = size(R,1);
-        end
-        dtime = time-htime;
-        R(Rmax,:) = [1, dtime, double(hash)];
-%     end
-  end
+%   htime = double(H(i,1));
+
+%not by clip
+try
+  R(1,2)=R(1,2)+nnz(z(:,hash));
+catch me
+    hash
 end
 
-R = unique(R(1:Rmax,:),'rows');
+% %by clip
+% try
+%   R(1,2)=R(1,2)+length(find(nonzeros(z(:,hash))~=str2double(clips(i))));
+% catch me
+%     hash
+% end
+
+%   try
+% %       htcol = nonzeros(z(:,hash));
+%       htcol = z(z(:,hash)~=0,hash);
+%   catch me
+%       htcol=[];
+%   end
+%   nentries = length(htcol);
+%   
+%   for j = 1:nentries
+%     time = htcol(j);
+%       %if time... line tim added to not count t=0 hashes
+% %     if time==htime
+% %     else
+%         Rmax = Rmax + 1;
+%         if Rmax > Rsize
+%           R = [R;zeros(Rsize,3)];
+%           Rsize = size(R,1);
+%         end
+%         dtime = time-htime;
+%         R(Rmax,:) = [1, dtime, double(hash)];
+% %     end
+%   end
+end
+
+% R = unique(R(1:Rmax,:),'rows');
 
 
 

@@ -24,15 +24,15 @@ end
 
 H1 = H(:,1);
 H2 = double(H(:,2));
-CH1 = floor(H2/(ch1hash*ch2hash*f1hash*dfhash*dthash));
-H2 = H2 - ch1hash*ch2hash*f1hash*dfhash*dthash * CH1;
-CH2 = floor(H2/(ch2hash*f1hash*dfhash*dthash));
-H2 = H2 - ch2hash*f1hash*dfhash*dthash * CH2;
-F1 = floor(H2/(f1hash*dfhash*dthash));
-H2 = H2 - f1hash*dfhash*dthash * F1;
+CH1 = floor(H2/(ch2hash*f1hash*dfhash*dthash));
+H2 = H2 - ch2hash*f1hash*dfhash*dthash * CH1;
+CH2 = floor(H2/(f1hash*dfhash*dthash));
+H2 = H2 - f1hash*dfhash*dthash * CH2;
+F1 = floor(H2/(dfhash*dthash));
+H2 = H2 - dfhash*dthash * F1;
 F1 = F1 + 1;
-DF = floor(H2/(dfhash*dthash));
-H2 = H2 - dfhash*dthash * DF;
+DF = floor(H2/(dthash));
+H2 = H2 - dthash * DF;
 if DF > 2^5
   DF = DF-dfhash;
 end

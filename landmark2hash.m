@@ -8,6 +8,11 @@ function H = landmark2hash(L,S)
 % Hash value is 20 bits: 8 bits of F1, 6 bits of delta-F, 6 bits of delta-T
 %number of time boxes used
 targetdt=3;
+maxChan=64;
+
+%tim added 2014-06-26 to fix all 0 hashes, i think leftover from zero
+%preallocation in f_land
+L( ~any(L,2), : ) = [];
 
 if nargin < 2
   S = 0;
@@ -39,6 +44,7 @@ DF = round(L(:,3)-L(:,2));
 
 H = uint32(L(:,1));
 % Make sure F1 is 0..255, not 1..256
+
 F1 = rem(round(L(:,2)-1),2^6);
 if DF < 0
   DF = DF + 2^6;
@@ -46,17 +52,18 @@ end
 
 DF = rem(DF,2^6);
 DT = rem(abs(round(L(:,4))), targetdt);
-CH1= L(:,5);
-CH2= L(:,6);
+CH1= rem(L(:,5),maxChan);
+CH2= rem(L(:,6),maxChan);
 S=CH1;
+clipNum=L(:,7);
 
 try
-   H = [S,H,uint32(CH1*(2^19*targetdt)+CH2*(2^12*targetdt)+F1*(2^6*targetdt)+DF*(targetdt)+DT)];
+   H = [clipNum,H,uint32(CH1*(2^18*targetdt)+CH2*(2^12*targetdt)+F1*(2^6*targetdt)+DF*(targetdt)+DT)];
 catch err
    disp(L);
    disp(S);
 end
-%tim added 2014-06-26 to fix all 0 hashes but dont know why they happen
-% H( ~any(H,2), : ) = [];
+
+
 
 

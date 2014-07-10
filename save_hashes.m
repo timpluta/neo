@@ -1,4 +1,4 @@
-function save_hashes(H,clipLoc,clipName)
+function save_hashes(H,clipLoc,clipName,chans)
 % save_hashes(H)
 %   Record the set of hashes that are rows of H in persistent
 %   database.
@@ -11,10 +11,6 @@ function save_hashes(H,clipLoc,clipName)
 % Hash is 20 bit = 1M slots
 %
 % 2008-12-24 Dan Ellis dpwe@ee.columbia.edu
-
-% This version uses an in-memory global with one row per hash
-% value, and a series of song ID / time ID entries per hash
-
 
 % if exist('HashTable','var') == 0 || length(HashTable) == 0
 %    clear_hashtable;
@@ -57,9 +53,6 @@ function save_hashes(H,clipLoc,clipName)
 %  save(strcat(clipLoc,filesep,clipName,'_HashTable.mat'),'HashTable','-v7.3')
 % toc
 
-
-tic
-
 i=1;
 j=2;
 H=sortrows(H,3);
@@ -87,9 +80,12 @@ while sum(a(i,:))~=0
     j=j+1;
 end
 
-z=sparse(rs',double(H(:,3)),double(H(:,2)),j,double(max(H(:,3))));
+% %saves time as table entry values
+% z=sparse(rs',double(H(:,3)),double(H(:,2)),j,(chans+1)*3*2^18);
+%saves clip as table entries
+z=sparse(rs',double(H(:,3)),double(H(:,1)),j,(chans+1)*3*2^18);
+
 save(strcat(clipLoc,filesep,clipName,'_HushTable.mat'),'z','-v7.3');
-toc
 
 
 

@@ -370,16 +370,16 @@ function [L,S,T,maxes] = find_landmarks2(D,freq,ID)
 
 d=[];
 %check for single frequency noise
-for ss=1:length(fieldnames(ID))
-    [a b]=max(abs(fft(D(ss,:)-mean(D(ss,:)))));
-    c=freq/length(D)*b;
-    d=[d;a c];
-    if c>10
-        c
-        ss
-        length(fieldnames(ID))
-    end
-end
+% for ss=1:length(fieldnames(ID))
+%     [a b]=max(abs(fft(D(ss,:)-mean(D(ss,:)))));
+%     c=freq/length(D)*b;
+%     d=[d;a c];
+%     if c>10
+%         c
+%         ss
+%         length(fieldnames(ID))
+%     end
+% end
 %maybe use this is intensity of max freq
 % find(d(:,1)>3*mean(d(:,1)))
 % length(fieldnames(ID))
@@ -438,7 +438,9 @@ for i =1:nmaxes3
         L(nlmarks,5) = maxes2(3,i);  % originating Channel number
         L(nlmarks,6) = maxes2(3,match);  % ending Channel number  
     
-
+if L(nlmarks,6)==0
+    L(nlmarks,:)
+end
       %end
   end
   

@@ -273,10 +273,10 @@ if len~=size(intMatrix,1)
     intMatrix=sparse(rr,cc,proportions);
 end
 
-newmatrix=double(S)*intMatrix;
+S=round(double(S)*intMatrix);
 %         
 %         newmatrix=neointerp(S,1,rezBoxes); %to 1 b/c always set to 1 sec clips
-        S=round(newmatrix);
+%         S=round(newmatrix);
         
         
         

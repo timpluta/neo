@@ -9,7 +9,7 @@ function createSubmission(  )
 
 %number of training segment randsamples to take (without replacement)
 %to find threshold (can be higher than number available, just doesnt use them all)
-nSamples=200;
+nSamples=1000;
 
 % %manual thresholds to use (if threshold is run below, these will be replaced
 % %before running submission)
@@ -28,21 +28,22 @@ nSamples=200;
 % %automated
 a=dir(strcat(matdir,clipsdir,'*_*'));
 clipDirNames={a.name};
-% clipDirNames={'Patient_1'};
+% clipDirNames={'Dog_3','Patient_5','Patient_7'};
 % clipDirNames={'Dog_1'};%,'Dog_2','Dog_3'};%,'Dog_2','Dog_3'};
-nClips=length(clipDirNames);
-total=zeros(nClips,nSamples,2);
-bstemp=zeros(1,nSamples);
+nSubjects=length(clipDirNames);
+total=zeros(nSubjects,nSamples,2);
+
 
 
 %find searchScore
 tic
-for ii=1:nClips
+for ii=1:nSubjects
     
     %without this line, hash tables from other clips might get used, comment out
     %for faster 1-subject testing only
     clear get_hash_hits2
     
+    bstemp=zeros(1,nSamples);
     clipLoc=strcat(matdir,clipsdir,clipDirNames{ii});    
     a=dir(strcat(clipLoc,filesep,'*_ictal_segment*.mat'));
     srsOfSegments={a(randsample(length(a),min(nSamples,length(a)))).name};
@@ -53,6 +54,7 @@ for ii=1:nClips
     
     %roundabout way to allow for mean/std in parfor
     parfor i=1:nTests
+%     for i=1:nTests
         
         R=match_query2(clipLoc,srsOfSegments{i});
         if ~isempty(R)
@@ -70,13 +72,13 @@ for ii=1:nClips
 %     ictalMean=mean(total)
 %     ictalStd=std(total)
     
-    
     clipLoc=strcat(matdir,clipsdir,clipDirNames{ii});    
     a=dir(strcat(clipLoc,filesep,'*_interictal_segment*.mat'));
     srsOfSegments={a(randsample(length(a),min(nSamples,length(a)))).name};
     nTests=length(srsOfSegments);
    
     parfor i=1:nTests
+%     for i=1:nTests
 
         R=match_query2(clipLoc,srsOfSegments{i});
             %time dep.
@@ -125,10 +127,10 @@ save('mrscore.mat','searchScore','total')
 
 %make submission
 tic
-resultsCell=cell(1,nClips);
+resultsCell=cell(1,nSubjects);
 % resultsCell=sParLoad('sResults.mat');
-% searchScore=sParLoad('mrscoreclip.mat');
-for ii=1:nClips
+searchScore=sParLoad('mrscore.mat');
+for ii=1:nSubjects
 
     %without this line, hash tables from other clips might get used, comment out
     %for faster 1-file testing only

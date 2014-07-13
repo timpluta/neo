@@ -1,4 +1,4 @@
-function [data,freq,latency,channels] = sParLoad( fname )
+function [data,freq,latency,channels,clipsUsed] = sParLoad( fname )
     load(fname);
     
     %D is name for data in files concatenated by putTogether
@@ -8,12 +8,18 @@ function [data,freq,latency,channels] = sParLoad( fname )
     
     %for general load
     if ~exist('data','var')
-        data=searchScore;
+        try
+            data=searchScore;
+        catch me
+            data=resultsCell;
+        end
         freq=0;
         channels=0;
+        clipsUsed=0;
     end
     
     %they said sometimes some frames got dropped, screws up shazam, this fixes, it assumes 1sec prints
+    %as long as puttogether is run first, its np that segment uses this
     freq=ceil(freq);
     if length(data)<freq
         data(:,end+1:freq)=data(:,end);
@@ -22,6 +28,7 @@ function [data,freq,latency,channels] = sParLoad( fname )
     %for test data with no latency,easier for automation to just =0 it
     if ~exist('latency','var')
         latency=0;
+        clipsUsed=0;
     end
     
     

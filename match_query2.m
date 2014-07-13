@@ -62,25 +62,38 @@ if length(fieldnames(channels)) == 30
 %     %non clip, segment search    
 %     Lq= findLandmarks3(data,freq,channels);
     %clip search
-    a=strfind(clipName,'_');
-    b=strfind(clipName,'.');
-    clipNum=clipName(a(4)+1:b(1)-1);
-    Lq= findLandmarks3(data,freq,channels,str2double(clipNum));
+    %this tells to only use ictal for ignoring self match
+    if isempty(strfind(clipName,'inter'))
+        a=strfind(clipName,'_');
+        b=strfind(clipName,'.');
+        clipNum=clipName(a(4)+1:b(1)-1);
+        Lq= findLandmarks3(data,freq,channels,str2double(clipNum));
+    else
+        Lq= findLandmarks3(data,freq,channels,10000);
+    end
+    
 
 else
 %     %non clip, segment search
 %     Lq= find_landmarks2(data,freq,channels);
     %clip search
-    a=strfind(clipName,'_');
-    b=strfind(clipName,'.');
-    clipNum=clipName(a(4)+1:b(1)-1);
-    Lq= find_landmarks2(data,freq,channels,str2double(clipNum));
+    
+    %this tells to only use ictal for ignoring self match
+    if ~isempty(strfind(clipName,'_ictal_s'))
+        a=strfind(clipName,'_');
+        b=strfind(clipName,'.');
+        clipNum=clipName(a(4)+1:b(1)-1);
+        Lq= find_landmarks2(data,freq,channels,str2double(clipNum));
+    else
+        Lq= find_landmarks2(data,freq,channels,10000);
+    end
+    
 end
 
 if lmBox>0
     preLq=Lq;
     %preallocation
-    Lq=zeros(((2*lmBox+1)^2)*length(Lq),6);
+    Lq=zeros(((2*lmBox+1)^2)*length(Lq),7);
     %row counter
     i=1;
 for h=1:size(preLq,1)
@@ -104,10 +117,15 @@ for h=1:size(preLq,1)
             end
             Lq(i,5)=preLq(h,5);
             Lq(i,6)=preLq(h,6);
+            Lq(i,7)=preLq(h,7);
             i=i+1;
         end
     end
 end
+
+%undoes preallocated zeros
+Lq( ~any(Lq,2), : ) = [];
+
 end
     %     preLq=[preLq;find_landmarks(D(i,round(landmarks_hopt/4*SR):end),SR,handles)];
     %     preLq=[preLq;find_landmarks(D(i,round(landmarks_hopt/2*SR):end),SR,handles)];
